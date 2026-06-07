@@ -1,7 +1,8 @@
 export type RunRequest = {
-  agent: string
   worktreePath: string
+  prompt: string
   capUsd: number
+  verify: string[]
 }
 
 export type RunResult =
