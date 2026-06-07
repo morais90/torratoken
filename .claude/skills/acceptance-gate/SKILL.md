@@ -5,18 +5,14 @@ description: Torra Token's acceptance gate — what must be green before a chang
 
 # Acceptance gate
 
-**Nothing broken ships.** Before you call a change done — or commit it — get the gate green:
+**Nothing broken ships.** Before you call a change done — or commit it — run the gate:
 
 ```sh
-pnpm typecheck   # types
-pnpm check       # Biome: lint + format
-pnpm test        # tests (see the `testing` skill)
-pnpm build       # when it applies
+pnpm validate   # typecheck + Biome + tests + build
 ```
 
-The same gate runs locally (pre-commit hook) and in CI (on the PR) — keep them in parity, since
-"works on my machine" is a bug in the gate. If something fails, fix it before moving on; never
-commit with a red gate.
+`validate` is the single source of truth: the pre-commit hook and CI both run it, so local and CI
+can't drift. If it fails, fix it before moving on; never commit with a red gate.
 
 ## Definition of done
 A change isn't done just because it compiles and passes:
