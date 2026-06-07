@@ -1,12 +1,7 @@
 pre-commit:
-  parallel: true
   commands:
-    typecheck:
-      run: pnpm typecheck
-    check:
-      run: pnpm check
-    test:
-      run: pnpm test
+    validate:
+      run: pnpm validate
 
 commit-msg:
   commands:
