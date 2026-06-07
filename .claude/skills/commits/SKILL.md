@@ -27,9 +27,8 @@ Imperative and short; add a body to explain the **why** when it isn't obvious.
 
 ## Writing the message
 - The subject names the **one main change** — the problem solved, not the files touched.
-- The body explains **what changed and why**, at a level where a reader understands the change
-  without opening the diff: give the motivation and the gist of the solution, and leave out
-  irrelevant detail. Describe the change — never list files.
+- The body explains **what changed and why** so a reader gets it without opening the diff —
+  pragmatic, a sentence or two, never a paragraph or a file list.
 - Skip the body only when the subject already says everything.
 - Respect line length: subject ≤ 72 chars; wrap body lines at ~72 (commitlint caps header
   and body at 100).
