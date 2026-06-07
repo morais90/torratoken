@@ -58,6 +58,8 @@ type Run =
 ## Style
 - **Biome** is the single source of truth for lint and formatting — run `pnpm check`, don't fight
   it.
+- **Separate logical blocks with blank lines** — guard clauses, setup vs. action vs. return,
+  grouped declarations — so each block reads as its own unit.
 - Use the domain's language in names: pass, run, burn, reserve, fleet, project.
 - **Comment only where the code can't explain itself** — the *why*, never the *what*. A
   docstring that restates the name (`/** Format a USD amount */` above `formatUsd`) is noise;
