@@ -59,4 +59,6 @@ type Run =
 - **Biome** is the single source of truth for lint and formatting — run `pnpm check`, don't fight
   it.
 - Use the domain's language in names: pass, run, burn, reserve, fleet, project.
-- Comment only when it earns its place — the **why**, not the **what**.
+- **Comment only where the code can't explain itself** — the *why*, never the *what*. A
+  docstring that restates the name (`/** Format a USD amount */` above `formatUsd`) is noise;
+  delete it. Prefer clear names over comments.
