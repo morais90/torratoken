@@ -18,6 +18,7 @@
     "@biomejs/biome": "^2",
     "@commitlint/cli": "^19",
     "@commitlint/config-conventional": "^19",
+    "@types/node": "^24",
     "lefthook": "^1",
     "tsup": "^8",
     "tsx": "^4",
