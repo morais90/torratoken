@@ -50,6 +50,12 @@ importers:
         specifier: workspace:*
         version: link:../core
 
+  packages/sandbox:
+    dependencies:
+      '@torra/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/web:
     dependencies:
       react:
