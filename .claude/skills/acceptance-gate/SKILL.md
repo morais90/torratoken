@@ -14,6 +14,9 @@ pnpm validate   # typecheck + Biome + tests + build
 `validate` is the single source of truth: the pre-commit hook and CI both run it, so local and CI
 can't drift. If it fails, fix it before moving on; never commit with a red gate.
 
+The pre-commit hook auto-formats staged files with Biome before validating, so you rarely need to
+run `pnpm format` by hand.
+
 ## Definition of done
 A change isn't done just because it compiles and passes:
 - new behavior has a test (see the `testing` skill);

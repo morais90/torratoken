@@ -1,5 +1,10 @@
 pre-commit:
+  piped: true
   commands:
+    format:
+      glob: "*.{js,jsx,ts,tsx,json,jsonc}"
+      run: pnpm exec biome check --write {staged_files}
+      stage_fixed: true
     validate:
       run: pnpm validate
 
