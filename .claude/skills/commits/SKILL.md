@@ -29,6 +29,8 @@ Imperative and short; add a body to explain the **why** when it isn't obvious.
 - The subject names the **one main change** — the problem solved, not the files touched.
 - Write it naturally; **don't enumerate files** or list every edit, even when a commit spans many.
 - Use the body only for the **why** or important context — never as a file inventory.
+- Respect line length: subject ≤ 72 chars; wrap body lines at ~72 (commitlint caps header
+  and body at 100).
 
 ## Flow
 - **Atomic commits** — one logical change each.
