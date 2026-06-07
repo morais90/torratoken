@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Turborepo
+.turbo/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+.idea/
+*.swp
+
+# Claude local overrides
+.claude/settings.local.json
+
+# Planning docs — temporários; o código vai refleti-los e depois serão removidos
+/docs/PLAN.md
+/docs/TECH_PLAN.md
+/docs/UX_PLAN.md
