@@ -31,19 +31,16 @@ export function createCoordinator(deps: CoordinatorDeps): Coordinator {
         return { runs: [], budget }
       }
 
-      const request = { repoUrl: run.repoUrl, runId: run.runId }
-
-      return deps.workspaces.withWorkspace(request, (workspace) =>
-        runPass(
-          {
-            budget,
-            agents: run.agents,
-            perAgentCapUsd: run.perAgentCapUsd,
-            worktreePath: workspace.path,
-            verify: run.verify,
-          },
-          deps.sandbox,
-        ),
+      return runPass(
+        {
+          budget,
+          agents: run.agents,
+          perAgentCapUsd: run.perAgentCapUsd,
+          repoUrl: run.repoUrl,
+          runId: run.runId,
+          verify: run.verify,
+        },
+        { workspaces: deps.workspaces, sandbox: deps.sandbox },
       )
     },
   }
