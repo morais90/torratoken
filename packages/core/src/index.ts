@@ -1,5 +1,11 @@
 export { availableToBurn, type BurnBudget, recordSpend, runBudgetUsd } from "./budget"
 export type { BudgetProvider } from "./budget-provider"
+export {
+  type Coordinator,
+  type CoordinatorDeps,
+  createCoordinator,
+  type ProjectRun,
+} from "./coordinator"
 export { type BudgetSettings, meteredBudgetProvider } from "./metered-budget-provider"
 export { type Agent, type PassInput, type PassOutcome, type PassRun, runPass } from "./pass"
 export { monthlyCreditUsd, type Plan } from "./plan"
