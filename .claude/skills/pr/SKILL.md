@@ -23,6 +23,9 @@ What the PR does about it and the approach taken. Call out:
 - **Why before what** — a reviewer who understands the problem reviews the solution better.
 - **Natural and pragmatic** — prose, not a file inventory; leave out technical detail that
   isn't relevant to understanding the solution (the diff has it).
+- **Flowing prose, no hard wrap** — one paragraph per line and let the renderer wrap it.
+  The commit line-width limit is for commit messages; hard-wrapping a PR body makes GitHub
+  honour the breaks and the text comes out ragged.
 - **One logical change per PR** — small PRs get better reviews; split unrelated work.
 - **Self-review the diff** before asking for review; don't make the reviewer find your typos.
 - **Link** the issue or PR it relates to, when there is one.
