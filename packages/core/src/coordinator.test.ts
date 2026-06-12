@@ -15,7 +15,7 @@ const fixedBudget = (budget: BurnBudget): BudgetProvider => ({
   current: () => Promise.resolve(budget),
 })
 
-const recordingWorkspaces = (path: string) => {
+const recordingWorkspaces = () => {
   const opened: WorkspaceRequest[] = []
   const workspaces: Workspaces = {
     withWorkspace: <T>(
@@ -23,7 +23,7 @@ const recordingWorkspaces = (path: string) => {
       use: (w: Workspace) => Promise<T>,
     ): Promise<T> => {
       opened.push(request)
-      return use({ path, branch: `torra/${request.runId}` })
+      return use({ path: `/managed/worktrees/${request.runId}`, branch: `torra/${request.runId}` })
     },
   }
   return { workspaces, opened }
@@ -53,8 +53,8 @@ const run: ProjectRun = {
 }
 
 describe("createCoordinator", () => {
-  it("runs the pass inside a workspace and feeds its path to the sandbox", async () => {
-    const { workspaces, opened } = recordingWorkspaces("/managed/worktrees/run-1")
+  it("runs each agent in its own workspace and feeds its path to the sandbox", async () => {
+    const { workspaces, opened } = recordingWorkspaces()
     const { sandbox, requests } = recordingSandbox([
       { status: "delivered", diff: "x", costUsd: 10 },
     ])
@@ -62,14 +62,14 @@ describe("createCoordinator", () => {
 
     const outcome = await coordinator.runProject(run)
 
-    expect(opened).toEqual([{ repoUrl: run.repoUrl, runId: "run-1" }])
-    expect(requests[0]?.worktreePath).toBe("/managed/worktrees/run-1")
+    expect(opened).toEqual([{ repoUrl: run.repoUrl, runId: "run-1-doc-writer" }])
+    expect(requests[0]?.worktreePath).toBe("/managed/worktrees/run-1-doc-writer")
     expect(outcome.runs.map((r) => r.agent)).toEqual(["doc-writer"])
     expect(outcome.budget.consumedUsd).toBe(10)
   })
 
   it("skips the workspace entirely when the budget is exhausted", async () => {
-    const { workspaces, opened } = recordingWorkspaces("/managed/worktrees/run-1")
+    const { workspaces, opened } = recordingWorkspaces()
     const { sandbox, requests } = recordingSandbox([])
     const coordinator = createCoordinator({
       budget: fixedBudget(budgetOf(80)),

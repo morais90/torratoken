@@ -1,21 +1,38 @@
 import { describe, expect, it } from "vitest"
 import type { BurnBudget } from "./budget"
 import { runPass } from "./pass"
-import type { RunResult, Sandbox } from "./sandbox"
+import type { RunRequest, RunResult, Sandbox } from "./sandbox"
+import type { Workspace, WorkspaceRequest, Workspaces } from "./workspaces"
 
 const delivered = (costUsd: number): RunResult => ({ status: "delivered", diff: "x", costUsd })
 
-const fakeSandbox = (results: RunResult[]): Sandbox => {
-  const queue = [...results]
-  return {
-    run: () => {
-      const next = queue.shift()
+const recordingWorkspaces = () => {
+  const opened: WorkspaceRequest[] = []
+  const workspaces: Workspaces = {
+    withWorkspace: <T>(
+      request: WorkspaceRequest,
+      use: (w: Workspace) => Promise<T>,
+    ): Promise<T> => {
+      opened.push(request)
+      return use({ path: `/work/${request.runId}`, branch: `torra/${request.runId}` })
+    },
+  }
+  return { workspaces, opened }
+}
+
+const recordingSandbox = (results: RunResult[]) => {
+  const requests: RunRequest[] = []
+  const sandbox: Sandbox = {
+    run: (request: RunRequest) => {
+      requests.push(request)
+      const next = results.shift()
       if (!next) {
-        throw new Error("fakeSandbox: out of results")
+        throw new Error("recordingSandbox: out of results")
       }
       return Promise.resolve(next)
     },
   }
+  return { sandbox, requests }
 }
 
 const budget = (consumedUsd: number): BurnBudget => ({
@@ -24,61 +41,66 @@ const budget = (consumedUsd: number): BurnBudget => ({
   reserveUsd: 20,
 })
 
+const passInput = (consumedUsd: number, agents: { name: string; prompt: string }[]) => ({
+  budget: budget(consumedUsd),
+  agents,
+  perAgentCapUsd: 50,
+  repoUrl: "git@github.com:owner/repo.git",
+  runId: "run-1",
+  verify: [],
+})
+
 describe("runPass", () => {
-  it("runs each agent in order and debits the budget", async () => {
-    const sandbox = fakeSandbox([delivered(10), delivered(5)])
+  it("runs each agent in its own workspace and debits the budget", async () => {
+    const { workspaces, opened } = recordingWorkspaces()
+    const { sandbox, requests } = recordingSandbox([delivered(10), delivered(5)])
 
     const outcome = await runPass(
-      {
-        budget: budget(0),
-        agents: [
-          { name: "doc-writer", prompt: "..." },
-          { name: "test-booster", prompt: "..." },
-        ],
-        perAgentCapUsd: 50,
-        worktreePath: "/repo",
-        verify: [],
-      },
-      sandbox,
+      passInput(0, [
+        { name: "doc-writer", prompt: "a" },
+        { name: "test-booster", prompt: "b" },
+      ]),
+      { workspaces, sandbox },
     )
 
-    expect(outcome.runs.map((run) => run.agent)).toEqual(["doc-writer", "test-booster"])
+    expect(opened.map((o) => o.runId)).toEqual(["run-1-doc-writer", "run-1-test-booster"])
+    expect(requests.map((r) => r.worktreePath)).toEqual([
+      "/work/run-1-doc-writer",
+      "/work/run-1-test-booster",
+    ])
+    expect(outcome.runs.map((r) => r.agent)).toEqual(["doc-writer", "test-booster"])
     expect(outcome.budget.consumedUsd).toBe(15)
   })
 
   it("stops before the next agent once the reserve is reached", async () => {
-    const sandbox = fakeSandbox([delivered(80)])
+    const { workspaces, opened } = recordingWorkspaces()
+    const { sandbox } = recordingSandbox([delivered(80)])
 
     const outcome = await runPass(
       {
-        budget: budget(0),
-        agents: [
-          { name: "first", prompt: "..." },
-          { name: "second", prompt: "..." },
-        ],
+        ...passInput(0, [
+          { name: "first", prompt: "a" },
+          { name: "second", prompt: "b" },
+        ]),
         perAgentCapUsd: 80,
-        worktreePath: "/repo",
-        verify: [],
       },
-      sandbox,
+      { workspaces, sandbox },
     )
 
-    expect(outcome.runs.map((run) => run.agent)).toEqual(["first"])
+    expect(outcome.runs.map((r) => r.agent)).toEqual(["first"])
+    expect(opened.map((o) => o.runId)).toEqual(["run-1-first"])
   })
 
   it("debits the cost even when a run is discarded", async () => {
-    const sandbox = fakeSandbox([{ status: "discarded", reason: "no changes", costUsd: 3 }])
+    const { workspaces } = recordingWorkspaces()
+    const { sandbox } = recordingSandbox([
+      { status: "discarded", reason: "no changes", costUsd: 3 },
+    ])
 
-    const outcome = await runPass(
-      {
-        budget: budget(0),
-        agents: [{ name: "doc-writer", prompt: "..." }],
-        perAgentCapUsd: 50,
-        worktreePath: "/repo",
-        verify: [],
-      },
+    const outcome = await runPass(passInput(0, [{ name: "doc-writer", prompt: "a" }]), {
+      workspaces,
       sandbox,
-    )
+    })
 
     expect(outcome.budget.consumedUsd).toBe(3)
   })

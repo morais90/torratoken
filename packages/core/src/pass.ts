@@ -1,5 +1,6 @@
 import { type BurnBudget, recordSpend, runBudgetUsd } from "./budget"
 import type { RunResult, Sandbox } from "./sandbox"
+import type { Workspaces } from "./workspaces"
 
 export type Agent = {
   name: string
@@ -10,7 +11,8 @@ export type PassInput = {
   budget: BurnBudget
   agents: Agent[]
   perAgentCapUsd: number
-  worktreePath: string
+  repoUrl: string
+  runId: string
   verify: string[]
 }
 
@@ -24,7 +26,12 @@ export type PassOutcome = {
   budget: BurnBudget
 }
 
-export async function runPass(input: PassInput, sandbox: Sandbox): Promise<PassOutcome> {
+export type PassDeps = {
+  workspaces: Workspaces
+  sandbox: Sandbox
+}
+
+export async function runPass(input: PassInput, deps: PassDeps): Promise<PassOutcome> {
   let budget = input.budget
   const runs: PassRun[] = []
 
@@ -34,16 +41,29 @@ export async function runPass(input: PassInput, sandbox: Sandbox): Promise<PassO
       break
     }
 
-    const result = await sandbox.run({
-      worktreePath: input.worktreePath,
-      prompt: agent.prompt,
-      capUsd,
-      verify: input.verify,
-    })
+    const result = await runAgent(input, agent, capUsd, deps)
 
     runs.push({ agent: agent.name, result })
     budget = recordSpend(budget, result.costUsd)
   }
 
   return { runs, budget }
+}
+
+function runAgent(
+  input: PassInput,
+  agent: Agent,
+  capUsd: number,
+  deps: PassDeps,
+): Promise<RunResult> {
+  const request = { repoUrl: input.repoUrl, runId: `${input.runId}-${agent.name}` }
+
+  return deps.workspaces.withWorkspace(request, (workspace) =>
+    deps.sandbox.run({
+      worktreePath: workspace.path,
+      prompt: agent.prompt,
+      capUsd,
+      verify: input.verify,
+    }),
+  )
 }
