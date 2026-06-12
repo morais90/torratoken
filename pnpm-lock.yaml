@@ -53,6 +53,12 @@ importers:
         specifier: workspace:*
         version: link:../core
 
+  packages/git:
+    dependencies:
+      '@torra/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/sandbox:
     dependencies:
       '@torra/core':

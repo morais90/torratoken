@@ -5,3 +5,4 @@ export { type Agent, type PassInput, type PassOutcome, type PassRun, runPass } f
 export { monthlyCreditUsd, type Plan } from "./plan"
 export type { RunRequest, RunResult, Sandbox } from "./sandbox"
 export type { UsageMeter } from "./usage-meter"
+export type { Workspace, WorkspaceRequest, Workspaces } from "./workspaces"
