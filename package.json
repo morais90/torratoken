@@ -17,7 +17,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2",
     "@commitlint/cli": "^21",
-    "@commitlint/config-conventional": "^19",
+    "@commitlint/config-conventional": "^21",
     "@types/node": "^24",
     "lefthook": "^1",
     "tsup": "^8",
