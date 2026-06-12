@@ -59,6 +59,12 @@ importers:
         specifier: workspace:*
         version: link:../core
 
+  packages/usage:
+    dependencies:
+      '@torra/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/web:
     dependencies:
       react:
