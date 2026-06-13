@@ -93,6 +93,30 @@ describe("commitAndPush", () => {
     expect(files.split("\n")).toContain("NOTE.md")
   })
 
+  it("commits even when the worktree config forces gpg signing", async () => {
+    const repoUrl = await makeRemote()
+    const root = await tempDir("torra-managed-")
+    const workspaces = new GitWorkspaces(root)
+
+    await workspaces.withWorkspace({ repoUrl, runId: "run-1-gpg" }, async (workspace) => {
+      await writeFile(join(workspace.path, "NOTE.md"), "from the agent\n")
+      // an agent could force signing with a broken signer to block delivery
+      await git(["config", "commit.gpgsign", "true"], workspace.path)
+      await git(["config", "gpg.program", "/bin/false"], workspace.path)
+
+      await commitAndPush({
+        worktreePath: workspace.path,
+        remote: repoUrl,
+        branch: workspace.branch,
+        message: "torra(doc-writer): apply changes",
+        author: operator,
+      })
+    })
+
+    const files = await git(["ls-tree", "--name-only", "torra/run-1-gpg"], repoUrl)
+    expect(files.split("\n")).toContain("NOTE.md")
+  })
+
   it("rejects and pushes nothing when the worktree has no changes", async () => {
     const repoUrl = await makeRemote()
     const root = await tempDir("torra-managed-")
