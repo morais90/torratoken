@@ -40,5 +40,9 @@ export async function commitAndPush(request: CommitAndPushRequest): Promise<void
     ],
     request.worktreePath,
   )
-  await git(["push", request.remote, `HEAD:refs/heads/${request.branch}`], request.worktreePath)
+  // `--` stops a `remote` shaped like `--flag` from being parsed as an option.
+  await git(
+    ["push", "--", request.remote, `HEAD:refs/heads/${request.branch}`],
+    request.worktreePath,
+  )
 }
