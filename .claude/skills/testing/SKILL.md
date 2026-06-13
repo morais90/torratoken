@@ -23,6 +23,9 @@ inside runs for real.
 - Test at the seam closest to real behavior: the **use case / flow**, not micro-units that mirror
   the code's structure.
 - Assert **outcomes and effects**, not internal calls.
+- Assert the **whole value**, not cherry-picked fields. Prefer one `toEqual` on the full object
+  or array over pulling a property at a time — a regression in a field you forgot to check still
+  fails the test, and the assertion doubles as documentation of the complete shape.
 
 ```ts
 // ✗ coupled to implementation
@@ -32,6 +35,16 @@ expect(store.save).toHaveBeenCalledWith(run)
 expect(await store.listRuns()).toContainEqual(
   expect.objectContaining({ status: "delivered" }),
 )
+
+// ✗ cherry-picks one field — silent regressions hide in the rest
+expect(outcome.runs[0].agent).toBe("doc-writer")
+expect(outcome.budget.consumedUsd).toBe(15)
+
+// ✓ pins the whole outcome
+expect(outcome).toEqual({
+  runs: [{ agent: "doc-writer", result: delivered(15) }],
+  budget: budget(15),
+})
 ```
 
 ## Test doubles
