@@ -61,4 +61,45 @@ describe("commitAndPush", () => {
     const subject = await git(["log", "-1", "--format=%s", "torra/run-1-doc-writer"], repoUrl)
     expect(subject).toBe("torra(doc-writer): apply changes")
   })
+
+  it("rejects when the worktree has no changes to commit", async () => {
+    const repoUrl = await makeRemote()
+    const root = await tempDir("torra-managed-")
+    const workspaces = new GitWorkspaces(root)
+
+    await expect(
+      workspaces.withWorkspace({ repoUrl, runId: "run-1-empty" }, async (workspace) => {
+        await git(["config", "user.email", "t@t.dev"], workspace.path)
+        await git(["config", "user.name", "torra"], workspace.path)
+
+        await commitAndPush({
+          worktreePath: workspace.path,
+          remote: repoUrl,
+          branch: workspace.branch,
+          message: "torra: nothing to do",
+        })
+      }),
+    ).rejects.toThrow()
+  })
+
+  it("rejects when the push target does not exist", async () => {
+    const repoUrl = await makeRemote()
+    const root = await tempDir("torra-managed-")
+    const workspaces = new GitWorkspaces(root)
+
+    await expect(
+      workspaces.withWorkspace({ repoUrl, runId: "run-1-bad-remote" }, async (workspace) => {
+        await writeFile(join(workspace.path, "NOTE.md"), "from the agent\n")
+        await git(["config", "user.email", "t@t.dev"], workspace.path)
+        await git(["config", "user.name", "torra"], workspace.path)
+
+        await commitAndPush({
+          worktreePath: workspace.path,
+          remote: join(root, "does-not-exist.git"),
+          branch: workspace.branch,
+          message: "torra(doc-writer): apply changes",
+        })
+      }),
+    ).rejects.toThrow()
+  })
 })
