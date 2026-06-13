@@ -2,8 +2,13 @@ import { describe, expect, it } from "vitest"
 import type { BurnBudget } from "./budget"
 import type { BudgetProvider } from "./budget-provider"
 import { createCoordinator, type ProjectRun } from "./coordinator"
+import type { Delivery } from "./delivery"
 import type { RunRequest, RunResult, Sandbox } from "./sandbox"
 import type { Workspace, WorkspaceRequest, Workspaces } from "./workspaces"
+
+const stubDelivery: Delivery = {
+  deliver: () => Promise.resolve({ pullRequestUrl: "https://github.com/owner/repo/pull/1" }),
+}
 
 const budgetOf = (consumedUsd: number): BurnBudget => ({
   creditUsd: 100,
@@ -58,14 +63,34 @@ describe("createCoordinator", () => {
     const { sandbox, requests } = recordingSandbox([
       { status: "delivered", diff: "x", costUsd: 10 },
     ])
-    const coordinator = createCoordinator({ budget: fixedBudget(budgetOf(0)), workspaces, sandbox })
+    const coordinator = createCoordinator({
+      budget: fixedBudget(budgetOf(0)),
+      workspaces,
+      sandbox,
+      delivery: stubDelivery,
+    })
 
     const outcome = await coordinator.runProject(run)
 
     expect(opened).toEqual([{ repoUrl: run.repoUrl, runId: "run-1-doc-writer" }])
-    expect(requests[0]?.worktreePath).toBe("/managed/worktrees/run-1-doc-writer")
-    expect(outcome.runs.map((r) => r.agent)).toEqual(["doc-writer"])
-    expect(outcome.budget.consumedUsd).toBe(10)
+    expect(requests).toEqual([
+      {
+        worktreePath: "/managed/worktrees/run-1-doc-writer",
+        prompt: "...",
+        capUsd: 50,
+        verify: ["pnpm test"],
+      },
+    ])
+    expect(outcome).toEqual({
+      runs: [
+        {
+          agent: "doc-writer",
+          result: { status: "delivered", diff: "x", costUsd: 10 },
+          delivery: { pullRequestUrl: "https://github.com/owner/repo/pull/1" },
+        },
+      ],
+      budget: budgetOf(10),
+    })
   })
 
   it("skips the workspace entirely when the budget is exhausted", async () => {
@@ -75,6 +100,7 @@ describe("createCoordinator", () => {
       budget: fixedBudget(budgetOf(80)),
       workspaces,
       sandbox,
+      delivery: stubDelivery,
     })
 
     const outcome = await coordinator.runProject(run)

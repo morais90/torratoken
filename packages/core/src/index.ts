@@ -6,6 +6,7 @@ export {
   createCoordinator,
   type ProjectRun,
 } from "./coordinator"
+export type { Delivery, DeliveryRequest, DeliveryResult } from "./delivery"
 export { type BudgetSettings, meteredBudgetProvider } from "./metered-budget-provider"
 export { type Agent, type PassInput, type PassOutcome, type PassRun, runPass } from "./pass"
 export { monthlyCreditUsd, type Plan } from "./plan"
