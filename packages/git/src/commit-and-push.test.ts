@@ -66,6 +66,29 @@ describe("commitAndPush", () => {
     expect(subject).toBe("torra(doc-writer): apply changes")
   })
 
+  it("stages new files and deletions across the tree", async () => {
+    const repoUrl = await makeRemote()
+    const root = await tempDir("torra-managed-")
+    const workspaces = new GitWorkspaces(root)
+
+    await workspaces.withWorkspace({ repoUrl, runId: "run-1-tree" }, async (workspace) => {
+      await writeFile(join(workspace.path, "NOTE.md"), "from the agent\n")
+      await rm(join(workspace.path, "README.md"))
+
+      await commitAndPush({
+        worktreePath: workspace.path,
+        remote: repoUrl,
+        branch: workspace.branch,
+        message: "torra(doc-writer): apply changes",
+        author: operator,
+      })
+    })
+
+    const files = (await git(["ls-tree", "--name-only", "torra/run-1-tree"], repoUrl)).split("\n")
+    expect(files).toContain("NOTE.md")
+    expect(files).not.toContain("README.md")
+  })
+
   it("ignores a git hook planted in the agent-controlled worktree", async () => {
     const repoUrl = await makeRemote()
     const root = await tempDir("torra-managed-")

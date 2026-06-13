@@ -1,9 +1,9 @@
 /**
- * The values here cross into host-side `git` and GitHub calls run with the
- * operator's credentials, so by the time a request reaches `deliver` they are
- * trusted: `repoUrl` has an allow-listed scheme and `branch` is a valid git
- * refname (e.g. `torra/<runId>-<agent>`). The adapter validates them at the
- * boundary before any privileged call, to avoid git argument injection.
+ * These values cross into host-side `git` and GitHub calls run with the
+ * operator's credentials, so an implementation MUST validate them before any
+ * privileged call: `repoUrl` to an allow-listed scheme and `branch` to a valid
+ * git refname (e.g. `torra/<runId>-<agent>`), to avoid git argument injection.
+ * No implementation exists yet, so nothing validates them today.
  */
 export type DeliveryRequest = {
   repoUrl: string
