@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, ready_for_review, reopened]
 
 jobs:
-  claude-review:
+  review:
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
@@ -14,18 +14,6 @@ jobs:
       id-token: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-
-      - name: Run Claude Code Review
-        id: claude-review
-        uses: anthropics/claude-code-action@v1
+      - uses: morais90/willskills/pr-review@main
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt: '/review-pr'
-          claude_args: >-
-            --model claude-opus-4-8
-            --effort high
-            --allowedTools "Task,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
