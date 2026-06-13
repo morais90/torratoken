@@ -19,6 +19,9 @@ export type CommitAndPushRequest = {
  * agent-set `commit.gpgsign` from blocking the commit. Callers must guarantee
  * there are changes: a delivered run always has a diff, and an empty worktree
  * makes `git commit` fail.
+ *
+ * `remote` and `branch` are trusted here: the delivery adapter validates the
+ * repo URL and the refname at its boundary before this privileged call.
  */
 export async function commitAndPush(request: CommitAndPushRequest): Promise<void> {
   await git(["add", "--all"], request.worktreePath)
