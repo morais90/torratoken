@@ -73,9 +73,24 @@ describe("createCoordinator", () => {
     const outcome = await coordinator.runProject(run)
 
     expect(opened).toEqual([{ repoUrl: run.repoUrl, runId: "run-1-doc-writer" }])
-    expect(requests[0]?.worktreePath).toBe("/managed/worktrees/run-1-doc-writer")
-    expect(outcome.runs.map((r) => r.agent)).toEqual(["doc-writer"])
-    expect(outcome.budget.consumedUsd).toBe(10)
+    expect(requests).toEqual([
+      {
+        worktreePath: "/managed/worktrees/run-1-doc-writer",
+        prompt: "...",
+        capUsd: 50,
+        verify: ["pnpm test"],
+      },
+    ])
+    expect(outcome).toEqual({
+      runs: [
+        {
+          agent: "doc-writer",
+          result: { status: "delivered", diff: "x", costUsd: 10 },
+          delivery: { pullRequestUrl: "https://github.com/owner/repo/pull/1" },
+        },
+      ],
+      budget: budgetOf(10),
+    })
   })
 
   it("skips the workspace entirely when the budget is exhausted", async () => {

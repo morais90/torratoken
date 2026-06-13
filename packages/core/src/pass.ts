@@ -21,6 +21,7 @@ export type PassRun = {
   agent: string
   result: RunResult
   delivery?: DeliveryResult
+  deliveryError?: string
 }
 
 export type PassOutcome = {
@@ -73,13 +74,24 @@ function runAgent(
       return { agent: agent.name, result }
     }
 
-    const delivery = await deps.delivery.deliver({
-      repoUrl: input.repoUrl,
-      branch: workspace.branch,
-      worktreePath: workspace.path,
-      agent: agent.name,
-    })
+    // Delivery is a host-side network step (push, open PR) that can fail on
+    // its own. Keep the failure local to this run so the pass still debits
+    // the cost already spent and moves on to the next agent.
+    try {
+      const delivery = await deps.delivery.deliver({
+        repoUrl: input.repoUrl,
+        branch: workspace.branch,
+        worktreePath: workspace.path,
+        agent: agent.name,
+      })
 
-    return { agent: agent.name, result, delivery }
+      return { agent: agent.name, result, delivery }
+    } catch (error) {
+      return { agent: agent.name, result, deliveryError: errorMessage(error) }
+    }
   })
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
 }
