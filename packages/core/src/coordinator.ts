@@ -1,5 +1,6 @@
 import { availableToBurn } from "./budget"
 import type { BudgetProvider } from "./budget-provider"
+import type { Delivery } from "./delivery"
 import { type Agent, type PassOutcome, runPass } from "./pass"
 import type { Sandbox } from "./sandbox"
 import type { Workspaces } from "./workspaces"
@@ -16,6 +17,7 @@ export type CoordinatorDeps = {
   budget: BudgetProvider
   workspaces: Workspaces
   sandbox: Sandbox
+  delivery: Delivery
 }
 
 export type Coordinator = {
@@ -40,7 +42,7 @@ export function createCoordinator(deps: CoordinatorDeps): Coordinator {
           runId: run.runId,
           verify: run.verify,
         },
-        { workspaces: deps.workspaces, sandbox: deps.sandbox },
+        { workspaces: deps.workspaces, sandbox: deps.sandbox, delivery: deps.delivery },
       )
     },
   }
