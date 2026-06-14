@@ -7,11 +7,22 @@ const SCP = /^[^@]+@([^:/]+):(.+)$/
 const SCHEME = /^(https|ssh):\/\/[^/]+\//
 
 /**
- * Accepts only `https://…` and ssh (`git@host:…` or `ssh://…`) URLs, so a
- * crafted `remote` like `ext::sh -c …` or `file://…` never reaches a push.
+ * Accepts only GitHub `https://` and ssh (`git@github.com:…` / `ssh://…`)
+ * URLs. The scheme check keeps a crafted `remote` like `ext::sh -c …` or
+ * `file://…` from reaching a push; pinning the host to github.com keeps the
+ * push target and the Octokit PR target from diverging.
  */
 export function isAllowedRepoUrl(repoUrl: string): boolean {
-  return /^https:\/\//.test(repoUrl) || /^ssh:\/\//.test(repoUrl) || SCP.test(repoUrl)
+  return hostOf(repoUrl)?.toLowerCase() === "github.com"
+}
+
+function hostOf(repoUrl: string): string | null {
+  const scp = SCP.exec(repoUrl)
+  if (scp) {
+    return scp[1] ?? null
+  }
+
+  return /^(?:https|ssh):\/\/(?:[^@/]+@)?([^/:]+)/.exec(repoUrl)?.[1] ?? null
 }
 
 /**

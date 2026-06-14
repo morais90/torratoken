@@ -12,6 +12,10 @@ describe("parseRepo", () => {
     expect(() => parseRepo("ext::sh -c evil")).toThrow()
     expect(() => parseRepo("file:///tmp/repo.git")).toThrow()
   })
+
+  it("rejects a non-GitHub host", () => {
+    expect(() => parseRepo("https://gitlab.com/owner/repo.git")).toThrow()
+  })
 })
 
 describe("isAllowedRepoUrl", () => {
@@ -22,6 +26,7 @@ describe("isAllowedRepoUrl", () => {
     expect(isAllowedRepoUrl("ext::sh -c evil")).toBe(false)
     expect(isAllowedRepoUrl("file:///tmp/r")).toBe(false)
     expect(isAllowedRepoUrl("http://github.com/o/r")).toBe(false)
+    expect(isAllowedRepoUrl("https://gitlab.com/o/r.git")).toBe(false)
   })
 })
 
