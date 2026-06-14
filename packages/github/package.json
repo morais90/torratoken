@@ -1,16 +1,16 @@
 {
-  "name": "@torra/git",
+  "name": "@torra/github",
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --clean",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
-    "@torra/core": "workspace:*"
+    "@octokit/rest": "^21.1.1",
+    "@torra/core": "workspace:*",
+    "@torra/git": "workspace:*"
   }
 }
