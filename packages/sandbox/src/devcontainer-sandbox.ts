@@ -40,9 +40,6 @@ const { name, ...definition } = JSON.parse(
   readFileSync(new URL("./agent.json", import.meta.url), "utf8"),
 )
 
-// Never let the agent delegate: a target-planted agent must stay inert.
-definition.disallowedTools = [...(definition.disallowedTools ?? []), "Agent"]
-
 let result
 for await (const message of query({
   prompt: "Carry out your instructions on the repository in the working directory, then stop.",
@@ -50,9 +47,13 @@ for await (const message of query({
     cwd: process.env.TORRA_CWD,
     permissionMode: "bypassPermissions",
     settingSources: [],
-    // Reliable turn cap at the options level (the agent's own maxTurns is a
-    // hint); never leave an unattended run unbounded.
+    // Per-agent knobs at the options level: these are reliably honored for the
+    // main-thread agent, unlike the same fields on the agent definition.
+    model: definition.model,
+    effort: definition.effort,
     maxTurns: definition.maxTurns ?? 30,
+    // Never let the agent delegate (the tool is "Agent"; older builds say "Task").
+    disallowedTools: [...(definition.disallowedTools ?? []), "Agent", "Task"],
     agents: { [name]: definition },
     agent: name,
   },
