@@ -1,6 +1,7 @@
 import { readdir, readFile } from "node:fs/promises"
 import { join } from "node:path"
-import { type Agent, parseAgent } from "./agent"
+import type { Agent } from "@torra/core"
+import { parseAgent } from "./agent"
 
 /**
  * Loads every `*.md` agent definition from a directory (Torra's own catalog,

@@ -1,12 +1,8 @@
+import type { Agent } from "./agent"
 import { type BurnBudget, recordSpend, runBudgetUsd } from "./budget"
 import type { Delivery, DeliveryResult } from "./delivery"
 import type { RunResult, Sandbox } from "./sandbox"
 import type { Workspaces } from "./workspaces"
-
-export type Agent = {
-  name: string
-  prompt: string
-}
 
 export type PassInput = {
   budget: BurnBudget
@@ -65,7 +61,7 @@ function runAgent(
   return deps.workspaces.withWorkspace(request, async (workspace) => {
     const result = await deps.sandbox.run({
       worktreePath: workspace.path,
-      prompt: agent.prompt,
+      agent,
       capUsd,
       verify: input.verify,
     })

@@ -1,7 +1,8 @@
+import type { Agent } from "./agent"
 import { availableToBurn } from "./budget"
 import type { BudgetProvider } from "./budget-provider"
 import type { Delivery } from "./delivery"
-import { type Agent, type PassOutcome, runPass } from "./pass"
+import { type PassOutcome, runPass } from "./pass"
 import type { Sandbox } from "./sandbox"
 import type { Workspaces } from "./workspaces"
 

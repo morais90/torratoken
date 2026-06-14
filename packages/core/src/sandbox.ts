@@ -1,6 +1,8 @@
+import type { Agent } from "./agent"
+
 export type RunRequest = {
   worktreePath: string
-  prompt: string
+  agent: Agent
   capUsd: number
   verify: string[]
 }

@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { basename, join } from "node:path"
-import type { RunRequest, RunResult, Sandbox } from "@torra/core"
+import type { Agent, RunRequest, RunResult, Sandbox } from "@torra/core"
 import { toAgentRun } from "./agent-run"
 import { classifyRun, type Verification } from "./classify"
 import { exec } from "./exec"
@@ -33,12 +33,30 @@ const RUNNER_PACKAGE = JSON.stringify(
   2,
 )
 
-const RUNNER_SCRIPT = `import { query } from "@anthropic-ai/claude-agent-sdk"
+const RUNNER_SCRIPT = `import { readFileSync } from "node:fs"
+import { query } from "@anthropic-ai/claude-agent-sdk"
+
+const { name, ...definition } = JSON.parse(
+  readFileSync(new URL("./agent.json", import.meta.url), "utf8"),
+)
 
 let result
 for await (const message of query({
-  prompt: process.env.TORRA_PROMPT,
-  options: { cwd: process.env.TORRA_CWD, permissionMode: "bypassPermissions", maxTurns: 30 },
+  prompt: "Carry out your instructions on the repository in the working directory, then stop.",
+  options: {
+    cwd: process.env.TORRA_CWD,
+    permissionMode: "bypassPermissions",
+    settingSources: [],
+    // Per-agent knobs at the options level: these are reliably honored for the
+    // main-thread agent, unlike the same fields on the agent definition.
+    model: definition.model,
+    effort: definition.effort,
+    maxTurns: definition.maxTurns ?? 30,
+    // Never let the agent delegate (the tool is "Agent"; older builds say "Task").
+    disallowedTools: [...(definition.disallowedTools ?? []), "Agent", "Task"],
+    agents: { [name]: definition },
+    agent: name,
+  },
 })) {
   if (message.type === "result") result = message
 }
@@ -53,20 +71,20 @@ export class DevcontainerSandbox implements Sandbox {
     const harness = await mkdtemp(join(tmpdir(), "torra-"))
 
     try {
-      await this.scaffold(harness, request.worktreePath)
+      await this.scaffold(harness, request.worktreePath, request.agent)
       await exec("npx", [...DEVCONTAINER_CLI, "up", "--workspace-folder", harness])
 
-      const agent = await this.runAgent(harness, request.prompt)
+      const agentRun = await this.runAgent(harness)
       const diff = await this.diff(request.worktreePath)
       const verification = await this.runVerify(harness, request.verify)
 
-      return classifyRun(agent, diff, verification)
+      return classifyRun(agentRun, diff, verification)
     } finally {
       await this.teardown(harness)
     }
   }
 
-  private async scaffold(harness: string, worktreePath: string): Promise<void> {
+  private async scaffold(harness: string, worktreePath: string, agent: Agent): Promise<void> {
     const devcontainer = join(harness, ".devcontainer")
     await mkdir(devcontainer, { recursive: true })
     await writeFile(join(devcontainer, "devcontainer.json"), devcontainerConfig(worktreePath))
@@ -75,9 +93,12 @@ export class DevcontainerSandbox implements Sandbox {
     await mkdir(runner, { recursive: true })
     await writeFile(join(runner, "package.json"), RUNNER_PACKAGE)
     await writeFile(join(runner, "runner.mjs"), RUNNER_SCRIPT)
+    // The agent definition goes in a file, not an env var: its prompt is
+    // multi-line and would not survive --remote-env parsing.
+    await writeFile(join(runner, "agent.json"), JSON.stringify(agent))
   }
 
-  private async runAgent(harness: string, prompt: string) {
+  private async runAgent(harness: string) {
     const runner = `/workspaces/${basename(harness)}/runner/runner.mjs`
     const token = process.env.CLAUDE_CODE_OAUTH_TOKEN ?? ""
 
@@ -86,8 +107,6 @@ export class DevcontainerSandbox implements Sandbox {
       "exec",
       "--workspace-folder",
       harness,
-      "--remote-env",
-      `TORRA_PROMPT=${prompt}`,
       "--remote-env",
       "TORRA_CWD=/repo",
       "--remote-env",
