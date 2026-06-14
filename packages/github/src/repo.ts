@@ -53,8 +53,7 @@ export function parseRepo(repoUrl: string): Repo {
 
   const path = repoPath(repoUrl).replace(/\.git$/, "")
   const segments = path.split("/").filter(Boolean)
-  const repo = segments.at(-1)
-  const owner = segments.at(-2)
+  const [owner, repo] = segments.length === 2 ? segments : []
 
   if (!owner || !repo) {
     throw new Error(`cannot parse owner/repo from: ${repoUrl}`)

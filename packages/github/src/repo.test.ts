@@ -16,6 +16,11 @@ describe("parseRepo", () => {
   it("rejects a non-GitHub host", () => {
     expect(() => parseRepo("https://gitlab.com/owner/repo.git")).toThrow()
   })
+
+  it("rejects paths that are not exactly owner/repo", () => {
+    expect(() => parseRepo("https://github.com/a/b/c.git")).toThrow()
+    expect(() => parseRepo("https://github.com/owner")).toThrow()
+  })
 })
 
 describe("isAllowedRepoUrl", () => {
