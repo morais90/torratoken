@@ -28,7 +28,11 @@ describe.skipIf(!enabled)("DevcontainerSandbox (integration)", () => {
     const sandbox = new DevcontainerSandbox()
     const result = await sandbox.run({
       worktreePath: repo,
-      prompt: "Add a JSDoc comment above the soma function in index.js. Only edit the file.",
+      agent: {
+        name: "doc-writer",
+        description: "Adds documentation",
+        prompt: "Add a JSDoc comment above the soma function in index.js. Only edit the file.",
+      },
       capUsd: 1,
       verify: [],
     })

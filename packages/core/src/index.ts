@@ -1,3 +1,4 @@
+export type { Agent } from "./agent"
 export { availableToBurn, type BurnBudget, recordSpend, runBudgetUsd } from "./budget"
 export type { BudgetProvider } from "./budget-provider"
 export {
@@ -8,7 +9,7 @@ export {
 } from "./coordinator"
 export type { Delivery, DeliveryRequest, DeliveryResult } from "./delivery"
 export { type BudgetSettings, meteredBudgetProvider } from "./metered-budget-provider"
-export { type Agent, type PassInput, type PassOutcome, type PassRun, runPass } from "./pass"
+export { type PassInput, type PassOutcome, type PassRun, runPass } from "./pass"
 export { monthlyCreditUsd, type Plan } from "./plan"
 export type { RunRequest, RunResult, Sandbox } from "./sandbox"
 export type { UsageMeter } from "./usage-meter"

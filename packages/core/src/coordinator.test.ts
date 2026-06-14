@@ -49,10 +49,12 @@ const recordingSandbox = (results: RunResult[]) => {
   return { sandbox, requests }
 }
 
+const docWriter = { name: "doc-writer", description: "doc-writer agent", prompt: "do doc-writer" }
+
 const run: ProjectRun = {
   runId: "run-1",
   repoUrl: "git@github.com:owner/repo.git",
-  agents: [{ name: "doc-writer", prompt: "..." }],
+  agents: [docWriter],
   perAgentCapUsd: 50,
   verify: ["pnpm test"],
 }
@@ -76,7 +78,7 @@ describe("createCoordinator", () => {
     expect(requests).toEqual([
       {
         worktreePath: "/managed/worktrees/run-1-doc-writer",
-        prompt: "...",
+        agent: docWriter,
         capUsd: 50,
         verify: ["pnpm test"],
       },

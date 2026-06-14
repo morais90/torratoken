@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import type { Agent } from "./agent"
 import type { BurnBudget } from "./budget"
 import type { Delivery, DeliveryRequest } from "./delivery"
 import { runPass } from "./pass"
@@ -6,6 +7,12 @@ import type { RunRequest, RunResult, Sandbox } from "./sandbox"
 import type { Workspace, WorkspaceRequest, Workspaces } from "./workspaces"
 
 const REPO = "git@github.com:owner/repo.git"
+
+const agent = (name: string): Agent => ({
+  name,
+  description: `${name} agent`,
+  prompt: `do ${name}`,
+})
 
 const delivered = (costUsd: number): RunResult => ({ status: "delivered", diff: "x", costUsd })
 
@@ -57,7 +64,7 @@ const budget = (consumedUsd: number): BurnBudget => ({
   reserveUsd: 20,
 })
 
-const passInput = (consumedUsd: number, agents: { name: string; prompt: string }[]) => ({
+const passInput = (consumedUsd: number, agents: Agent[]) => ({
   budget: budget(consumedUsd),
   agents,
   perAgentCapUsd: 50,
@@ -72,21 +79,29 @@ describe("runPass", () => {
     const { sandbox, requests } = recordingSandbox([delivered(10), delivered(5)])
     const { delivery, calls } = recordingDelivery()
 
-    const outcome = await runPass(
-      passInput(0, [
-        { name: "doc-writer", prompt: "a" },
-        { name: "test-booster", prompt: "b" },
-      ]),
-      { workspaces, sandbox, delivery },
-    )
+    const outcome = await runPass(passInput(0, [agent("doc-writer"), agent("test-booster")]), {
+      workspaces,
+      sandbox,
+      delivery,
+    })
 
     expect(opened).toEqual([
       { repoUrl: REPO, runId: "run-1-doc-writer" },
       { repoUrl: REPO, runId: "run-1-test-booster" },
     ])
     expect(requests).toEqual([
-      { worktreePath: "/work/run-1-doc-writer", prompt: "a", capUsd: 50, verify: [] },
-      { worktreePath: "/work/run-1-test-booster", prompt: "b", capUsd: 50, verify: [] },
+      {
+        worktreePath: "/work/run-1-doc-writer",
+        agent: agent("doc-writer"),
+        capUsd: 50,
+        verify: [],
+      },
+      {
+        worktreePath: "/work/run-1-test-booster",
+        agent: agent("test-booster"),
+        capUsd: 50,
+        verify: [],
+      },
     ])
     expect(calls).toEqual([
       {
@@ -126,7 +141,7 @@ describe("runPass", () => {
     ])
     const { delivery, calls } = recordingDelivery()
 
-    const outcome = await runPass(passInput(0, [{ name: "doc-writer", prompt: "a" }]), {
+    const outcome = await runPass(passInput(0, [agent("doc-writer")]), {
       workspaces,
       sandbox,
       delivery,
@@ -146,7 +161,7 @@ describe("runPass", () => {
     const { sandbox } = recordingSandbox([{ status: "aborted", reason: "max turns", costUsd: 4 }])
     const { delivery, calls } = recordingDelivery()
 
-    const outcome = await runPass(passInput(0, [{ name: "doc-writer", prompt: "a" }]), {
+    const outcome = await runPass(passInput(0, [agent("doc-writer")]), {
       workspaces,
       sandbox,
       delivery,
@@ -171,13 +186,11 @@ describe("runPass", () => {
           : Promise.resolve({ pullRequestUrl: "https://github.com/owner/repo/pull/2" }),
     }
 
-    const outcome = await runPass(
-      passInput(0, [
-        { name: "doc-writer", prompt: "a" },
-        { name: "test-booster", prompt: "b" },
-      ]),
-      { workspaces, sandbox, delivery },
-    )
+    const outcome = await runPass(passInput(0, [agent("doc-writer"), agent("test-booster")]), {
+      workspaces,
+      sandbox,
+      delivery,
+    })
 
     expect(outcome).toEqual({
       runs: [
@@ -198,13 +211,7 @@ describe("runPass", () => {
     const { delivery, calls } = recordingDelivery()
 
     const outcome = await runPass(
-      {
-        ...passInput(0, [
-          { name: "first", prompt: "a" },
-          { name: "second", prompt: "b" },
-        ]),
-        perAgentCapUsd: 80,
-      },
+      { ...passInput(0, [agent("first"), agent("second")]), perAgentCapUsd: 80 },
       { workspaces, sandbox, delivery },
     )
 

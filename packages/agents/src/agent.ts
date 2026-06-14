@@ -1,13 +1,6 @@
-import type { AgentDefinition } from "@anthropic-ai/claude-agent-sdk"
+import type { Agent } from "@torra/core"
 import matter from "gray-matter"
 import { z } from "zod"
-
-/**
- * A Torra agent is the SDK's native `AgentDefinition` plus a name. The runner
- * feeds it straight into `query({ agents, agent })`, so we reuse the SDK type
- * instead of inventing a parallel one.
- */
-export type Agent = AgentDefinition & { name: string }
 
 const frontmatter = z.object({
   name: z.string().min(1),
