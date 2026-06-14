@@ -50,6 +50,9 @@ for await (const message of query({
     cwd: process.env.TORRA_CWD,
     permissionMode: "bypassPermissions",
     settingSources: [],
+    // Reliable turn cap at the options level (the agent's own maxTurns is a
+    // hint); never leave an unattended run unbounded.
+    maxTurns: definition.maxTurns ?? 30,
     agents: { [name]: definition },
     agent: name,
   },
