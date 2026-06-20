@@ -25,4 +25,9 @@ describe("configSchema", () => {
   it("rejects a config with no projects", () => {
     expect(() => configSchema.parse({ ...valid, projects: [] })).toThrow()
   })
+
+  it("rejects a repo URL that could inject into git clone", () => {
+    const projects = [{ repoUrl: "ext::sh -c evil", agents: ["doc-writer"] }]
+    expect(() => configSchema.parse({ ...valid, projects })).toThrow()
+  })
 })

@@ -1,8 +1,11 @@
 import { readFile } from "node:fs/promises"
+import { isAllowedRepoUrl } from "@torra/github"
 import { z } from "zod"
 
 const project = z.object({
-  repoUrl: z.string().min(1),
+  // Validated here because it reaches `git clone` before the delivery adapter
+  // ever sees it; an unchecked value (`ext::sh -c …`, a `-`-prefix) is host RCE.
+  repoUrl: z.string().refine(isAllowedRepoUrl, "repoUrl must be a GitHub https or ssh URL"),
   agents: z.array(z.string().min(1)).min(1),
   verify: z.array(z.string()).default([]),
 })
