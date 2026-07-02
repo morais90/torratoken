@@ -30,6 +30,7 @@ export function createGitHubDelivery(deps: GitHubDeliveryDeps): Delivery {
 
       await deps.commitAndPush({
         worktreePath: request.worktreePath,
+        gitDir: request.gitDir,
         remote: request.repoUrl,
         branch: request.branch,
         message: title,

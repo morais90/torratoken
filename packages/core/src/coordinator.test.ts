@@ -28,7 +28,11 @@ const recordingWorkspaces = () => {
       use: (w: Workspace) => Promise<T>,
     ): Promise<T> => {
       opened.push(request)
-      return use({ path: `/managed/worktrees/${request.runId}`, branch: `torra/${request.runId}` })
+      return use({
+        path: `/managed/worktrees/${request.runId}`,
+        branch: `torra/${request.runId}`,
+        gitDir: `/managed/git/${request.runId}`,
+      })
     },
   }
   return { workspaces, opened }
@@ -78,6 +82,7 @@ describe("createCoordinator", () => {
     expect(requests).toEqual([
       {
         worktreePath: "/managed/worktrees/run-1-doc-writer",
+        gitDir: "/managed/git/run-1-doc-writer",
         agent: docWriter,
         capUsd: 50,
         verify: ["pnpm test"],

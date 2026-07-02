@@ -2,6 +2,7 @@ import type { Agent } from "./agent"
 
 export type RunRequest = {
   worktreePath: string
+  gitDir: string
   agent: Agent
   capUsd: number
   verify: string[]

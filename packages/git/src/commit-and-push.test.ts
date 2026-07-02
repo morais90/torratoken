@@ -49,6 +49,7 @@ describe("commitAndPush", () => {
 
       await commitAndPush({
         worktreePath: workspace.path,
+        gitDir: workspace.gitDir,
         remote: repoUrl,
         branch: workspace.branch,
         message: "torra(doc-writer): apply changes",
@@ -77,6 +78,7 @@ describe("commitAndPush", () => {
 
       await commitAndPush({
         worktreePath: workspace.path,
+        gitDir: workspace.gitDir,
         remote: repoUrl,
         branch: workspace.branch,
         message: "torra(doc-writer): apply changes",
@@ -104,6 +106,7 @@ describe("commitAndPush", () => {
 
       await commitAndPush({
         worktreePath: workspace.path,
+        gitDir: workspace.gitDir,
         remote: repoUrl,
         branch: workspace.branch,
         message: "torra(doc-writer): apply changes",
@@ -129,6 +132,7 @@ describe("commitAndPush", () => {
 
       await commitAndPush({
         worktreePath: workspace.path,
+        gitDir: workspace.gitDir,
         remote: repoUrl,
         branch: workspace.branch,
         message: "torra(doc-writer): apply changes",
@@ -137,6 +141,38 @@ describe("commitAndPush", () => {
     })
 
     const files = await git(["ls-tree", "--name-only", "torra/run-1-gpg"], repoUrl)
+    expect(files.split("\n")).toContain("NOTE.md")
+  })
+
+  it("ignores git metadata when the agent replaces the worktree .git", async () => {
+    const repoUrl = await makeRemote()
+    const root = await tempDir("torra-managed-")
+    const sentinel = join(await tempDir("torra-sentinel-"), "PWNED")
+    const workspaces = new GitWorkspaces(root)
+
+    await workspaces.withWorkspace({ repoUrl, runId: "run-1-replace" }, async (workspace) => {
+      await writeFile(join(workspace.path, "NOTE.md"), "from the agent\n")
+
+      // The agent owns the worktree, so it can swap the real `.git` link for a
+      // repo it controls, whose clean filter runs host-side on `git add`.
+      await rm(join(workspace.path, ".git"))
+      await git(["init"], workspace.path)
+      await git(["config", "filter.evil.clean", `sh -c "touch ${sentinel}; cat"`], workspace.path)
+      await git(["config", "filter.evil.required", "true"], workspace.path)
+      await writeFile(join(workspace.path, ".gitattributes"), "NOTE.md filter=evil\n")
+
+      await commitAndPush({
+        worktreePath: workspace.path,
+        gitDir: workspace.gitDir,
+        remote: repoUrl,
+        branch: workspace.branch,
+        message: "torra(doc-writer): apply changes",
+        author: operator,
+      })
+    })
+
+    expect(existsSync(sentinel)).toBe(false)
+    const files = await git(["ls-tree", "--name-only", "torra/run-1-replace"], repoUrl)
     expect(files.split("\n")).toContain("NOTE.md")
   })
 
@@ -149,6 +185,7 @@ describe("commitAndPush", () => {
       workspaces.withWorkspace({ repoUrl, runId: "run-1-empty" }, (workspace) =>
         commitAndPush({
           worktreePath: workspace.path,
+          gitDir: workspace.gitDir,
           remote: repoUrl,
           branch: workspace.branch,
           message: "torra: nothing to do",
@@ -172,6 +209,7 @@ describe("commitAndPush", () => {
 
         await commitAndPush({
           worktreePath: workspace.path,
+          gitDir: workspace.gitDir,
           remote: join(root, "does-not-exist.git"),
           branch: workspace.branch,
           message: "torra(doc-writer): apply changes",

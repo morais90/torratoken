@@ -75,7 +75,7 @@ export class DevcontainerSandbox implements Sandbox {
       await exec("npx", [...DEVCONTAINER_CLI, "up", "--workspace-folder", harness])
 
       const agentRun = await this.runAgent(harness)
-      const diff = await this.diff(request.worktreePath)
+      const diff = await this.diff(request.worktreePath, request.gitDir)
       const verification = await this.runVerify(harness, request.verify)
 
       return classifyRun(agentRun, diff, verification)
@@ -118,8 +118,16 @@ export class DevcontainerSandbox implements Sandbox {
     return toAgentRun(JSON.parse(result.stdout))
   }
 
-  private async diff(worktreePath: string): Promise<string> {
-    const result = await exec("git", ["-C", worktreePath, "diff"])
+  private async diff(worktreePath: string, gitDir: string): Promise<string> {
+    // Trusted git dir, not the worktree's `.git`; `--no-ext-diff` blocks diff.external.
+    const result = await exec("git", [
+      "--git-dir",
+      gitDir,
+      "--work-tree",
+      worktreePath,
+      "--no-ext-diff",
+      "diff",
+    ])
     return result.stdout
   }
 

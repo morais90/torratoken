@@ -26,6 +26,7 @@ const request = {
   repoUrl: "git@github.com:owner/repo.git",
   branch: "torra/run-1-doc-writer",
   worktreePath: "/work/run-1-doc-writer",
+  gitDir: "/git/run-1-doc-writer",
   agent: "doc-writer",
 }
 
@@ -38,6 +39,7 @@ describe("createGitHubDelivery", () => {
     expect(pushes).toEqual([
       {
         worktreePath: "/work/run-1-doc-writer",
+        gitDir: "/git/run-1-doc-writer",
         remote: "git@github.com:owner/repo.git",
         branch: "torra/run-1-doc-writer",
         message: "torra(doc-writer): apply changes",

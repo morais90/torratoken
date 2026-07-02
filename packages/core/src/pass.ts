@@ -61,6 +61,7 @@ function runAgent(
   return deps.workspaces.withWorkspace(request, async (workspace) => {
     const result = await deps.sandbox.run({
       worktreePath: workspace.path,
+      gitDir: workspace.gitDir,
       agent,
       capUsd,
       verify: input.verify,
@@ -78,6 +79,7 @@ function runAgent(
         repoUrl: input.repoUrl,
         branch: workspace.branch,
         worktreePath: workspace.path,
+        gitDir: workspace.gitDir,
         agent: agent.name,
       })
 
