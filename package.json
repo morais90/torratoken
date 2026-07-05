@@ -19,7 +19,7 @@
     "@commitlint/cli": "^21",
     "@commitlint/config-conventional": "^21",
     "@types/node": "^25",
-    "lefthook": "^1",
+    "lefthook": "^2",
     "tsup": "^8",
     "tsx": "^4",
     "turbo": "^2",
