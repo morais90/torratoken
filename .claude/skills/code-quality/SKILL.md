@@ -64,3 +64,7 @@ type Run =
 - **Comment only where the code can't explain itself** — the *why*, never the *what*. A
   docstring that restates the name (`/** Format a USD amount */` above `formatUsd`) is noise;
   delete it. Prefer clear names over comments.
+- **Watch the volume, not just each line.** A valid *why* still becomes noise when it's repeated
+  or when the types already carry it. Explain a non-obvious rationale once, in its canonical place
+  (usually the type or the boundary that owns it), and let the field name and the reference stand
+  everywhere else — don't restate it at each use site.
