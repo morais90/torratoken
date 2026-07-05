@@ -1,0 +1,14 @@
+{
+  "plan": "max-5x",
+  "reserveUsd": 5,
+  "perAgentCapUsd": 1,
+  "managedRoot": ".torra/managed",
+  "agentsDir": "agents",
+  "projects": [
+    {
+      "repoUrl": "git@github.com:owner/repo.git",
+      "agents": ["doc-writer"],
+      "verify": ["pnpm test"]
+    }
+  ]
+}

@@ -65,9 +65,27 @@ importers:
 
   packages/daemon:
     dependencies:
+      '@torra/agents':
+        specifier: workspace:*
+        version: link:../agents
       '@torra/core':
         specifier: workspace:*
         version: link:../core
+      '@torra/git':
+        specifier: workspace:*
+        version: link:../git
+      '@torra/github':
+        specifier: workspace:*
+        version: link:../github
+      '@torra/sandbox':
+        specifier: workspace:*
+        version: link:../sandbox
+      '@torra/usage':
+        specifier: workspace:*
+        version: link:../usage
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
 
   packages/git:
     dependencies:
