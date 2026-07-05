@@ -6,6 +6,12 @@ export type WorkspaceRequest = {
 export type Workspace = {
   path: string
   branch: string
+  /**
+   * The worktree's git directory, captured before the agent runs. Host-side git
+   * must target it with `--git-dir` rather than discovering `.git`, which the
+   * agent can replace to run its own config, hooks, or filters.
+   */
+  gitDir: string
 }
 
 /**

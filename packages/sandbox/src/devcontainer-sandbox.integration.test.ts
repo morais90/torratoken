@@ -28,6 +28,7 @@ describe.skipIf(!enabled)("DevcontainerSandbox (integration)", () => {
     const sandbox = new DevcontainerSandbox()
     const result = await sandbox.run({
       worktreePath: repo,
+      gitDir: join(repo, ".git"),
       agent: {
         name: "doc-writer",
         description: "Adds documentation",

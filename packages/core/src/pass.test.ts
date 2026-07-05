@@ -24,7 +24,11 @@ const recordingWorkspaces = () => {
       use: (w: Workspace) => Promise<T>,
     ): Promise<T> => {
       opened.push(request)
-      return use({ path: `/work/${request.runId}`, branch: `torra/${request.runId}` })
+      return use({
+        path: `/work/${request.runId}`,
+        branch: `torra/${request.runId}`,
+        gitDir: `/git/${request.runId}`,
+      })
     },
   }
   return { workspaces, opened }
@@ -92,12 +96,14 @@ describe("runPass", () => {
     expect(requests).toEqual([
       {
         worktreePath: "/work/run-1-doc-writer",
+        gitDir: "/git/run-1-doc-writer",
         agent: agent("doc-writer"),
         capUsd: 50,
         verify: [],
       },
       {
         worktreePath: "/work/run-1-test-booster",
+        gitDir: "/git/run-1-test-booster",
         agent: agent("test-booster"),
         capUsd: 50,
         verify: [],
@@ -108,12 +114,14 @@ describe("runPass", () => {
         repoUrl: REPO,
         branch: "torra/run-1-doc-writer",
         worktreePath: "/work/run-1-doc-writer",
+        gitDir: "/git/run-1-doc-writer",
         agent: "doc-writer",
       },
       {
         repoUrl: REPO,
         branch: "torra/run-1-test-booster",
         worktreePath: "/work/run-1-test-booster",
+        gitDir: "/git/run-1-test-booster",
         agent: "test-booster",
       },
     ])
@@ -221,6 +229,7 @@ describe("runPass", () => {
         repoUrl: REPO,
         branch: "torra/run-1-first",
         worktreePath: "/work/run-1-first",
+        gitDir: "/git/run-1-first",
         agent: "first",
       },
     ])

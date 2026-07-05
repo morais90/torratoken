@@ -9,6 +9,7 @@ export type DeliveryRequest = {
   repoUrl: string
   branch: string
   worktreePath: string
+  gitDir: string
   agent: string
 }
 

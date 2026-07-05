@@ -24,9 +24,12 @@ export class GitWorkspaces implements Workspaces {
 
     await mkdir(dirname(path), { recursive: true })
     await git(["worktree", "add", "-b", branch, path, base], mirror)
+    // Capture the git dir now, while `.git` is still the link we made; the agent
+    // can replace it later, so the worktree stops being a trusted source.
+    const gitDir = await git(["rev-parse", "--absolute-git-dir"], path)
 
     try {
-      return await use({ path, branch })
+      return await use({ path, branch, gitDir })
     } finally {
       await git(["worktree", "remove", "--force", path], mirror).catch(() => {})
       await git(["branch", "-D", branch], mirror).catch(() => {})
@@ -42,7 +45,7 @@ export class GitWorkspaces implements Workspaces {
     }
 
     await mkdir(dirname(dir), { recursive: true })
-    await git(["clone", "--mirror", repoUrl, dir])
+    await git(["clone", "--mirror", "--", repoUrl, dir])
 
     return dir
   }
